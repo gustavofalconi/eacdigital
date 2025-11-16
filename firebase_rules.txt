@@ -1,0 +1,17 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // A regra abaixo se aplica a ambas as coleções (saturday-schedule e sunday-schedule)
+    match /{dayCollection}/{eventId} {
+      // QUALQUER UM (público geral) pode LER o cronograma.
+      allow read: if true;
+
+      // APENAS usuários autenticados e autorizados (admins) podem escrever.
+      allow write: if request.auth != null 
+                   && request.auth.uid in [
+                     '8b8lSkAUgqdTIh3vjXCzahJTjaG2',  // admin original
+                     '3XBdvC8tfsPe4corIdGZNDRvV9E3'   // novo admin
+                   ];
+    }
+  }
+}

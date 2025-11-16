@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Cronograma 1º EAC</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        :root {
+            --text-dark: #1f2937; /* gray-800 */
+            --text-light: #6b7280; /* gray-500 */
+            --card-bg: #ffffff;
+            --border-color: #e5e7eb; /* gray-200 */
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6; /* gray-100 */
+            color: var(--text-dark);
+            -webkit-tap-highlight-color: transparent;
+        }
+        ::-webkit-scrollbar { display: none; } /* Mobile first, no scrollbar */
+        
+        /* --- Componentes Customizados --- */
+        .segmented-control {
+            display: flex;
+            background-color: #e5e7eb;
+            padding: 4px;
+            border-radius: 10px;
+            position: relative;
+        }
+        .segmented-control .tab-btn {
+            flex: 1;
+            padding: 10px;
+            border-radius: 8px;
+            font-weight: 600;
+            color: var(--text-light);
+            transition: color 0.3s ease;
+            cursor: pointer;
+            z-index: 10;
+        }
+        #tab-indicator {
+            position: absolute;
+            top: 4px;
+            bottom: 4px;
+            width: calc(50% - 4px);
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* --- Linha do Tempo --- */
+        .timeline-item {
+            position: relative;
+            padding-left: 40px;
+            padding-bottom: 24px;
+        }
+        .timeline-item:last-child {
+            padding-bottom: 4px;
+        }
+        .timeline-track {
+            position: absolute;
+            top: 20px;
+            left: 15px;
+            bottom: -20px;
+            width: 2px;
+            background-color: var(--border-color);
+        }
+        .timeline-item:last-child .timeline-track {
+            display: none;
+        }
+        .timeline-dot {
+            position: absolute;
+            top: 12px;
+            left: 10px;
+            width: 12px;
+            height: 12px;
+            border-radius: 9999px;
+            border: 2px solid var(--border-color);
+            background-color: var(--card-bg);
+            transition: all 0.3s ease;
+        }
+        .timeline-dot.acontecendo { border-color: #f59e0b; background-color: #f59e0b; }
+        .timeline-dot.atrasada { border-color: #ef4444; background-color: #ef4444; }
+        .timeline-dot.concluido { border-color: #10b981; background-color: #10b981; }
+
+        .animate-dot-pulse {
+            animation: dot-pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes dot-pulse { 50% { transform: scale(1.3); } }
+
+        /* --- Modal de Edição (Bottom Sheet) --- */
+        #admin-edit-modal {
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        #admin-edit-sheet {
+            transform: translateY(100%);
+            transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        #admin-edit-modal.is-open #admin-edit-sheet {
+            transform: translateY(0);
+        }
+        
+        .status-select {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 0.5rem center;
+            background-repeat: no-repeat;
+            background-size: 1.5em 1.5em;
+            padding-right: 2.5rem;
+        }
+        
+        /* Classe para dar mais destaque ao status de atraso/adiantamento */
+        .delay-status-strong {
+            font-size: 1.1rem; /* Fonte um pouco maior */
+            font-weight: 600;  /* Texto semibold */
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <div class="max-w-2xl mx-auto pb-24">
+        
+        <header class="sticky top-0 bg-gray-100 z-30 px-4 pt-4 pb-3 border-b border-gray-200">
+            <div class="flex justify-between items-center mb-4">
+                <h1 class="text-xl font-bold text-gray-800">1º EAC</h1>
+                <div class="text-right">
+                    <p id="estimated-end-time" class="text-lg font-bold text-gray-900"></p>
+                    <p id="delay-status" class="delay-status-strong"></p>
+                </div>
+                <div class="flex items-center">
+                    <button id="admin-login-btn" class="p-2 text-gray-500 hover:text-blue-600 rounded-full">
+                        <i class="ph-fill ph-gear-six text-2xl"></i>
+                    </button>
+                    <div id="admin-menu-container" class="hidden relative">
+                         <button id="admin-menu-btn" class="p-2 text-blue-600 rounded-full">
+                            <i class="ph-fill ph-user-circle text-3xl"></i>
+                        </button>
+                        <div id="admin-dropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl z-50">
+                            <a id="reset-btn" href="#" class="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-100 rounded-t-lg"><i class="ph ph-arrows-clockwise"></i> Restaurar Dia</a>
+                            <a id="admin-logout-btn" href="#" class="flex items-center gap-3 px-4 py-3 text-sm text-red-600 hover:bg-red-50 rounded-b-lg"><i class="ph ph-sign-out"></i> Sair</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="segmented-control">
+                <div id="tab-indicator"></div>
+                <button id="btn-saturday" data-day="saturday" class="tab-btn">Sábado</button>
+                <button id="btn-sunday" data-day="sunday" class="tab-btn">Domingo</button>
+            </div>
+        </header>
+
+        <main id="schedule-container" class="px-4 pt-4">
+            <div id="loading" class="text-center p-8">
+                 <div class="flex justify-center items-center">
+                    <i class="ph-bold ph-circle-notch text-4xl text-blue-600 animate-spin"></i>
+                </div>
+            </div>
+        </main>
+
+    </div>
+    
+    <div id="admin-modal" class="hidden fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+        <div class="bg-white p-6 rounded-2xl shadow-xl w-full max-w-sm">
+            <h2 class="text-xl font-bold mb-1 text-center">Acesso Restrito</h2>
+            <p class="text-center text-gray-500 mb-6 text-sm">Insira suas credenciais de administrador.</p>
+            <form id="admin-login-form" class="space-y-4">
+                <div>
+                    <label for="email" class="font-medium text-sm text-gray-700">Email</label>
+                    <input type="email" id="email" class="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-blue-600" required>
+                </div>
+                 <div>
+                    <label for="password" class="font-medium text-sm text-gray-700">Senha</label>
+                    <input type="password" id="password" class="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-blue-600" required>
+                </div>
+                <p id="login-error" class="text-red-500 text-sm pt-1 text-center hidden">Credenciais incorretas.</p>
+                <div class="pt-2 flex gap-3">
+                    <button type="button" id="close-login-modal" class="w-full bg-gray-200 text-gray-800 py-3 px-4 rounded-lg hover:bg-gray-300 font-semibold">Cancelar</button>
+                    <button type="submit" class="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-600 font-semibold">Entrar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div id="reset-modal" class="hidden fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+        <div class="bg-white p-6 rounded-2xl shadow-xl w-full max-w-sm text-center">
+             <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-yellow-100 mb-4">
+                <i class="ph-bold ph-warning text-2xl text-yellow-600"></i>
+            </div>
+            <h2 class="text-xl font-bold mb-2">Restaurar Cronograma</h2>
+            <p class="text-gray-600 mb-6 text-sm">Todas as alterações feitas neste dia serão perdidas. Deseja continuar?</p>
+            <div class="flex justify-center gap-3">
+                <button id="cancel-reset-btn" class="flex-1 px-6 py-3 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 font-semibold">Cancelar</button>
+                <button id="confirm-reset-btn" class="flex-1 px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 font-semibold">Confirmar</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="note-modal" class="hidden fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+        <div class="bg-white p-6 rounded-2xl shadow-xl w-full max-w-sm">
+            <h2 class="text-xl font-bold mb-4 flex items-center gap-2"><i class="ph-fill ph-info text-blue-600"></i> Observação</h2>
+            <p id="note-content" class="text-gray-700 mb-6 whitespace-pre-wrap max-h-60 overflow-y-auto"></p>
+            <button id="close-note-btn" class="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold">Fechar</button>
+        </div>
+    </div>
+    
+    <div id="admin-edit-modal" class="hidden fixed inset-0 bg-black/60 z-40">
+        <div id="admin-edit-sheet" class="fixed bottom-0 left-0 right-0 bg-gray-100 rounded-t-2xl p-4 shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div class="w-12 h-1.5 bg-gray-300 rounded-full mx-auto mb-4"></div>
+            <h3 class="font-bold text-lg mb-4 text-center" id="edit-modal-activity-title">Editar Atividade</h3>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="font-semibold text-sm text-gray-600">Horário</label>
+                    <div class="flex items-center gap-2 mt-1">
+                        <input type="time" id="edit-start-time" class="w-full p-2 border border-gray-300 rounded-lg">
+                        <span class="font-bold text-gray-500">-</span>
+                        <input type="time" id="edit-end-time" class="w-full p-2 border border-gray-300 rounded-lg">
+                    </div>
+                </div>
+                
+                <div>
+                    <label for="edit-status" class="font-semibold text-sm text-gray-600">Status</label>
+                    <select id="edit-status" class="w-full p-2 border border-gray-300 rounded-lg mt-1 bg-white status-select">
+                        <option value="Aguardando">Aguardando</option>
+                        <option value="Acontecendo">Acontecendo</option>
+                        <option value="Atrasada">Atrasada</option>
+                        <option value="Concluído">Concluído</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label for="edit-note" class="font-semibold text-sm text-gray-600">Observação</label>
+                    <textarea id="edit-note" rows="3" class="w-full p-2 border border-gray-300 rounded-lg mt-1" placeholder="Adicionar uma nota..."></textarea>
+                </div>
+            </div>
+            
+            <div class="mt-6 flex gap-3">
+                <button id="cancel-edit-btn" class="w-full bg-gray-300 text-gray-800 py-3 rounded-lg font-semibold">Cancelar</button>
+                <button id="save-edit-btn" class="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold">Salvar e Ajustar</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // --- CONFIGURAÇÃO E IMPORTAÇÕES DO FIREBASE ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyCLGlGEn01oM9z89bRtFFhdICt0mYkyP3M",
+            authDomain: "cronograma-ejc.firebaseapp.com",
+            projectId: "cronograma-ejc",
+            storageBucket: "cronograma-ejc.appspot.com",
+            messagingSenderId: "46795469357",
+            appId: "1:46795469357:web:988d194ecfe0bfb2adfea4"
+        };
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
+        import { getFirestore, collection, doc, onSnapshot, getDocs, writeBatch, query } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+
+        // --- INICIALIZAÇÃO E DADOS ---
+        let app, auth, db;
+        try {
+            app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
+        } catch (error) {
+            console.error("Erro na inicialização do Firebase:", error);
+            document.body.innerHTML = `<div class="text-red-600 bg-red-100 p-4 rounded-md shadow-md text-center font-bold">Erro Crítico na Inicialização do Firebase: ${error.message}</div>`;
+            throw new Error("Configuração do Firebase inválida.");
+        }
+        
+        const plannedEndTimes = {
+            saturday: '20:10',
+            sunday: '18:50'
+        };
+        
+        const initialSaturdaySchedule = [
+            { order: 0, start: "09:00", end: "11:00", activity: "CHEGADA DAS EQUIPES DE TRABALHO", location: "SAGRADA FAMILIA", status: "Aguardando", note: "" }, 
+            { order: 1, start: "11:00", end: "11:15", activity: "BENÇÃO DO SANTÍSSIMO - EQUIPES DE TRABALHO", location: "CAPELA", status: "Aguardando", note: "" }, 
+            { order: 2, start: "11:15", end: "12:30", activity: "ALMOÇO - TODAS AS EQUIPES", location: "GALPÃO", status: "Aguardando", note: "" }, 
+            { order: 3, start: "13:30", end: "14:00", activity: "CHEGADA DOS ENCONTRISTAS", location: "GALPÃO", status: "Aguardando", note: "" }, 
+            { order: 4, start: "14:00", end: "14:25", activity: "TEATRO: AUTO DA BARCA", location: "PLENÁRIO", status: "Aguardando", note: "" }, 
+            { order: 5, start: "14:25", end: "14:30", activity: "MOVIMENTAÇÃO PARA A SALA", location: "PLENÁRIO", status: "Aguardando", note: "" }, 
+            { order: 6, start: "14:30", end: "14:40", activity: "APRESENTAÇÃO SALA, AVISO E ORIENTAÇÕES", location: "PLENÁRIO", status: "Aguardando", note: "" }, 
+            { order: 7, start: "14:40", end: "15:10", activity: "PALESTRA: EU VIVO, EU PENSO, PARA QUÊ? - PALESTRANTE - PADRE MATHEUS ", location: "PLENÁRIO", status: "Aguardando", note: "" }, 
+            { order: 8, start: "15:10", end: "15:15", activity: "ORIENTAÇÕES SOBRE AS RESENHAS", location: "PLENÁRIO", status: "Aguardando", note: "" },
+            { order: 9, start: "15:15", end: "15:20", activity: "MOVIMENTAÇÃO PARA A RESENHA", location: "", status: "Aguardando", note: "" }, 
+            { order: 10, start: "15:20", end: "15:35", activity: "RESENHA: APRESENTAÇÕES", location: "SALAS TÉRREO", status: "Aguardando", note: "" }, 
+            { order: 11, start: "15:35", end: "15:40", activity: "MOVIMENTAÇÃO PARA O GALPÃO", location: "", status: "Aguardando", note: "" }, 
+            { order: 12, start: "15:40", end: "16:05", activity: "CAFÉ, CANTINA, BANHEIRO E ANIMAÇÃO", location: "GALPÃO", status: "Aguardando", note: "" }, 
+            { order: 13, start: "16:05", end: "16:30", activity: "TEATRO: UM DIA COM JESUS", location: "PLENÁRIO", status: "Aguardando", note: "" }, 
+            { order: 14, start: "16:30", end: "17:00", activity: "PALESTRA O AMOR DE DEUS", location: "PLENÁRIO", status: "Aguardando", note: "" }, 
+            { order: 15, start: "17:00", end: "17:05", activity: "MOVIMENTAÇÃO PARA AS RESENHAS", location: "", status: "Aguardando", note: "" }, 
+            { order: 16, start: "17:05", end: "17:35", activity: "RESENHA: EU VIVO, EU PENSO, PARA QUÊ?/AMOR DE DEUS", location: "SALAS TERREO", status: "Aguardando", note: "" }, 
+            { order: 17, start: "17:35", end: "17:40", activity: "MOVIMENTAÇÃO DOS ENCONTRISTAS PARA O PLENÁRIO", location: "PLENÁRIO", status: "Aguardando", note: "" }, 
+            { order: 18, start: "17:40", end: "19:10", activity: "VEREDA", location: "SALAS TERREO", status: "Aguardando", note: "" }, 
+            { order: 19, start: "19:10", end: "19:25", activity: "ADORAÇÃO AO SANTISSIMO - ENCONTRISTAS", location: "PLENÁRIO", status: "Aguardando", note: "" }, 
+            { order: 20, start: "19:25", end: "19:30", activity: "MOVIMENTAÇÃO PARA O GALPÃO", location: "", status: "Aguardando", note: "" }, 
+            { order: 21, start: "19:30", end: "20:00", activity: "JANTAR - LANCHE", location: "SALAS (TÉRREO)", status: "Aguardando", note: "" }, 
+            { order: 22, start: "20:00", end: "20:10", activity: "ENCERRAMENTO", location: "", status: "Aguardando", note: "" }
+        ];
+        const initialSundaySchedule = [
+            { order: 0, start: "08:00", end: "08:30", activity: "CHEGADA DAS EQUIPES DE TRABALHO", location: "", status: "Aguardando", note: "" }, 
+            { order: 1, start: "08:30", end: "09:00", activity: "CHEGADA DOS ENCONTRISTAS - RECEPÇÃO E CAFÉ", location: "GALPÃO", status: "Aguardando", note: "" }, 
+            { order: 2, start: "09:00", end: "09:05", activity: "MOVIMENTAÇÃO PARA A CAPELA", location: "", status: "Aguardando", note: "" }, 
+            { order: 3, start: "09:05", end: "09:25", activity: "CAPELA - ATIVIDADE DA EQUIPE DE LITURGIA", location: "CAPELA", status: "Aguardando", note: "" }, 
+            { order: 4, start: "09:25", end: "09:30", activity: "MOVIMENTAÇÃO DOS ENCONTRISTAS PARA O PLENÁRIO", location: "", status: "Aguardando", note: "" }, 
+            { order: 5, start: "09:30", end: "09:45", activity: "ATIVIDADE DA SALA - MUSICA", location: "PLENÁRIO", status: "Aguardando", note: "" }, 
+            { order: 6, start: "09:45", end: "10:05", activity: "PALESTRA: BULLYING", location: "PLENÁRIO", status: "Aguardando", note: "" }, 
+            { order: 7, start: "10:05", end: "10:35", activity: "PALESTRA: AMIZADE CRISTÃ - PALESTRANTE: BRUNA QUILANTE", location: "PLENÁRIO", status: "Aguardando", note: "" }, 
+            { order: 8, start: "10:35", end: "10:40", activity: "RESENHA: AMIZADE CRISTÃ (DINÂMICA)", location: "SALAS (TÉRREO)", status: "Aguardando", note: "" }, 
+            { order: 9, start: "11:05", end: "11:10", activity: "MOVIMENTAÇÃO DOS ENCONTRISTAS PARA O PLENÁRIO", location: "", status: "Aguardando", note: "" }, 
+            { order: 10, start: "11:10", end: "11:25", activity: "ATIVIDADE DE SALA - MUSICA", location: "PLENÁRIO", status: "Aguardando", note: "" }, 
+            { order: 11, start: "11:25", end: "11:55", activity: "PALESTRA NOSSA SENHORA - PALESTRANTE: VICTOR MASCARENHAS", location: "PLENÁRIO", status: "Aguardando", note: "" }, 
+            { order: 12, start: "11:55", end: "12:00", activity: "MOVIMENTAÇÃO DOS ENCONTRISTAS PARA O REFEITÓRIO", location: "", status: "Aguardando", note: "" }, 
+            { order: 13, start: "12:00", end: "12:45", activity: "ALMOÇO", location: "GALPÃO", status: "Aguardando", note: "" }, 
+            { order: 14, start: "12:45", end: "13:00", activity: "CANTINA E BANHEIRO", location: "PÁTIO INTERNO", status: "Aguardando", note: "" }, 
+            { order: 15, start: "13:00", end: "13:05", activity: "MOVIMENTAÇÃO DOS ENCONTRISTAS PARA O PLENÁRIO", location: "", status: "Aguardando", note: "" }, 
+            { order: 16, start: "13:05", end: "13:20", activity: "ATIVIDADE DA SALA - MUSICA", location: "PLENÁRIO", status: "Aguardando", note: "" }, 
+            { order: 17, start: "13:20", end: "13:40", activity: "TEATRO - MISSA EXPLICADA", location: "PLENÁRIO", status: "Aguardando", note: "" }, 
+            { order: 18, start: "13:40", end: "14:20", activity: "PALESTRA - MISSA EXPLICADA", location: "PLENÁRIO", status: "Aguardando", note: "" }, 
+            { order: 19, start: "14:20", end: "14:25", activity: "MOVIMENTAÇÃO PARA AS RESENHAS", location: "", status: "Aguardando", note: "" }, 
+            { order: 20, start: "14:25", end: "14:50", activity: "RESENHA - MISSA EXPLICADA", location: "", status: "Aguardando", note: "" }, 
+            { order: 21, start: "14:50", end: "14:55", activity: "MOVIMENTAÇÃO PARA O PÁTIO", location: "", status: "Aguardando", note: "" }, 
+            { order: 22, start: "14:55", end: "15:10", activity: "CAFÉ, CANTINA E BANHEIRO", location: "PÁTIO", status: "Aguardando", note: "" }, 
+            { order: 23, start: "15:10", end: "15:25", activity: "ATIVIDADE SALA - MUSICA", location: "PLENÁRIO", status: "Aguardando", note: "" }, 
+            { order: 24, start: "15:25", end: "15:55", activity: "PALESTRA: 4º MANDAMENTO - HONRAR PAI E MÃE - PALESTRANTE DIÁCONO RAFAEL", location: "PLENÁRIO", status: "Aguardando", note: "" }, 
+            { order: 25, start: "15:55", end: "16:00", activity: "TEATRO - OS ANJOS DO CAÇA AO TESOURO", location: "PLENÁRIO", status: "Aguardando", note: "" }, 
+            { order: 26, start: "16:00", end: "17:00", activity: "DINÂMICA - ENTREGA DOS KITS", location: "SALAS TERREO", status: "Aguardando", note: "" }, 
+            { order: 27, start: "17:00", end: "17:15", activity: "MOVIMENTAÇÃO DOS ENCONTRISTAS PARA O PÁTIO E ENCONTRO COM OS FAMILIARES", location: "", status: "Aguardando", note: "" }, 
+            { order: 28, start: "17:15", end: "17:25", activity: "MOVIMENTAÇÃO DOS ENCONTRISTAS E PAIS PARA O PÁTIO", location: "PÁTIO", status: "Aguardando", note: "" }, 
+            { order: 29, start: "17:25", end: "18:40", activity: "SANTA MISSA", location: "PÁTIO", status: "Aguardando", note: "" }, 
+            { order: 30, start: "18:40", end: "18:50", activity: "ENCERRAMENTO", location: "", status: "Aguardando", note: "" }
+        ];
+
+        // --- ESTADO DO APLICATIVO ---
+        let isAdmin = false;
+        let activeDay = 'saturday';
+        let unsubscribe;
+        let latestScheduleData = [];
+        let editingEventId = null;
+
+        // --- ELEMENTOS DO DOM ---
+        const elements = {
+            adminModal: document.getElementById('admin-modal'),
+            resetModal: document.getElementById('reset-modal'),
+            noteModal: document.getElementById('note-modal'),
+            adminEditModal: document.getElementById('admin-edit-modal'),
+            adminLoginForm: document.getElementById('admin-login-form'),
+            emailInput: document.getElementById('email'),
+            passwordInput: document.getElementById('password'),
+            loginError: document.getElementById('login-error'),
+            closeLoginModalBtn: document.getElementById('close-login-modal'),
+            cancelResetBtn: document.getElementById('cancel-reset-btn'),
+            confirmResetBtn: document.getElementById('confirm-reset-btn'),
+            noteContent: document.getElementById('note-content'),
+            closeNoteBtn: document.getElementById('close-note-btn'),
+            cancelEditBtn: document.getElementById('cancel-edit-btn'),
+            saveEditBtn: document.getElementById('save-edit-btn'),
+            adminLoginBtn: document.getElementById('admin-login-btn'),
+            adminMenuContainer: document.getElementById('admin-menu-container'),
+            adminMenuBtn: document.getElementById('admin-menu-btn'),
+            adminDropdown: document.getElementById('admin-dropdown'),
+            adminLogoutBtn: document.getElementById('admin-logout-btn'),
+            resetBtn: document.getElementById('reset-btn'),
+            btnSaturday: document.getElementById('btn-saturday'),
+            btnSunday: document.getElementById('btn-sunday'),
+            tabIndicator: document.getElementById('tab-indicator'),
+            scheduleContainer: document.getElementById('schedule-container'),
+            estimatedEndTimeEl: document.getElementById('estimated-end-time'),
+            delayStatusEl: document.getElementById('delay-status'),
+            loadingEl: document.getElementById('loading'),
+            editModalTitle: document.getElementById('edit-modal-activity-title'),
+            editStartTimeInput: document.getElementById('edit-start-time'),
+            editEndTimeInput: document.getElementById('edit-end-time'),
+            editStatusSelect: document.getElementById('edit-status'),
+            editNoteTextarea: document.getElementById('edit-note'),
+        };
+
+        // --- UTILITÁRIOS DE TEMPO ---
+        function timeToMinutes(timeStr) {
+            if (!timeStr) return 0;
+            const [hours, minutes] = timeStr.split(':').map(Number);
+            return hours * 60 + minutes;
+        }
+        function minutesToTime(totalMinutes) {
+            const hours = Math.floor(totalMinutes / 60);
+            const minutes = totalMinutes % 60;
+            return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+        }
+
+        // --- POPULAÇÃO INICIAL (SE VAZIO) ---
+        async function seedDatabase() {
+            const seed = async (colName, data) => {
+                const colRef = collection(db, colName);
+                const snapshot = await getDocs(colRef);
+                if (snapshot.empty) {
+                    console.log(`Populando ${colName}...`);
+                    const batch = writeBatch(db);
+                    data.forEach(event => {
+                        const docRef = doc(colRef);
+                        batch.set(docRef, event);
+                    });
+                    await batch.commit();
+                }
+            };
+            try {
+                await seed('saturday-schedule', initialSaturdaySchedule);
+                await seed('sunday-schedule', initialSundaySchedule);
+            } catch (error) {
+                 console.error("ERRO AO POPULAR BANCO:", error);
+                 elements.scheduleContainer.innerHTML = `<div class="text-red-600 bg-red-100 p-4 rounded-md text-center">Erro de Permissão no Banco. Verifique as Regras de Segurança.</div>`;
+                 throw error;
+            }
+        }
+
+        // --- OUVIR E RENDERIZAR CRONOGRAMA ---
+        function listenToSchedule(day) {
+            if (unsubscribe) unsubscribe(); 
+            
+            elements.loadingEl.classList.remove('hidden');
+            elements.scheduleContainer.innerHTML = '';
+            elements.scheduleContainer.appendChild(elements.loadingEl);
+
+            const q = query(collection(db, `${day}-schedule`));
+            unsubscribe = onSnapshot(q, (snapshot) => {
+                let scheduleData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                scheduleData.sort((a, b) => a.order - b.order);
+                latestScheduleData = scheduleData;
+                renderSchedule(latestScheduleData);
+            }, (error) => {
+                console.error("ERRO AO OUVIR BANCO:", error);
+                elements.scheduleContainer.innerHTML = `<div class="text-red-600 bg-red-100 p-4 rounded-md text-center">Erro de Leitura do Banco. Verifique as Regras de Segurança.</div>`;
+            });
+        }
+
+        function renderSchedule(scheduleData) {
+            elements.loadingEl.classList.add('hidden');
+            elements.scheduleContainer.innerHTML = '';
+
+            if (scheduleData.length > 0) {
+                // calcular o término real como o maior 'end' entre todos os eventos
+                const endTimesInMinutes = scheduleData.map(ev => timeToMinutes(ev.end || '00:00'));
+                const maxEndInMinutes = Math.max(...endTimesInMinutes, 0);
+                const actualEndTime = minutesToTime(maxEndInMinutes);
+
+                elements.estimatedEndTimeEl.textContent = `Término previsto: ${actualEndTime}`;
+
+                const plannedEndTime = plannedEndTimes[activeDay];
+                const diffInMinutes = timeToMinutes(actualEndTime) - timeToMinutes(plannedEndTime);
+
+                // Reset de classes e aplicar classe base
+                elements.delayStatusEl.className = 'delay-status-strong';
+                if (diffInMinutes > 0) {
+                    elements.delayStatusEl.textContent = `${diffInMinutes} min de atraso`;
+                    elements.delayStatusEl.classList.add('text-red-600');
+                } else if (diffInMinutes < 0) {
+                    elements.delayStatusEl.textContent = `${Math.abs(diffInMinutes)} min adiantado`;
+                    elements.delayStatusEl.classList.add('text-emerald-600');
+                } else {
+                    elements.delayStatusEl.textContent = 'No horário';
+                    elements.delayStatusEl.classList.add('text-gray-600');
+                }
+
+            } else {
+                elements.estimatedEndTimeEl.textContent = '';
+                elements.delayStatusEl.textContent = '';
+            }
+
+            scheduleData.forEach((event) => {
+                const status = event.status || 'Aguardando';
+                const statusNormalized = status.toLowerCase().replace('í', 'i');
+                const pulseAnimation = (statusNormalized === 'acontecendo' || statusNormalized === 'atrasada') ? 'animate-dot-pulse' : '';
+                
+                let statusColorClass = 'text-gray-500';
+                switch (status) {
+                    case 'Acontecendo': statusColorClass = 'text-amber-600'; break;
+                    case 'Atrasada': statusColorClass = 'text-red-600'; break;
+                    case 'Concluído': statusColorClass = 'text-emerald-600'; break;
+                }
+
+                const statusTextHTML = status !== 'Aguardando'
+                    ? `<span class="font-bold ${statusColorClass}"> • ${status}</span>`
+                    : '';
+
+                const adminButton = isAdmin ? `
+                    <button class="edit-event-btn p-2 text-gray-400 hover:text-blue-600" data-id="${event.id}">
+                        <i class="ph-bold ph-pencil-simple text-xl"></i>
+                    </button>
+                ` : '';
+
+                const noteIndicator = event.note ? `
+                    <button class="view-note-btn text-red-500 hover:text-red-700" data-note="${event.note}">
+                        <i class="ph-fill ph-info text-xl"></i>
+                    </button>
+                ` : '';
+
+                const eventCardHTML = `
+                    <div class="timeline-item">
+                        <div class="timeline-track"></div>
+                        <div class="timeline-dot ${statusNormalized} ${pulseAnimation}"></div>
+                        <div class="flex items-start justify-between">
+                            <div>
+                                <p class="font-semibold text-sm text-gray-500">${event.start} - ${event.end}${statusTextHTML}</p>
+                                <h3 class="font-bold text-lg text-gray-900 mt-1">${event.activity}</h3>
+                                ${event.location ? `<p class="text-sm text-gray-500 flex items-center gap-1 mt-1"><i class="ph-bold ph-map-pin"></i> ${event.location}</p>` : ''}
+                            </div>
+                            <div class="flex items-center gap-2">
+                                ${noteIndicator}
+                                ${adminButton}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                elements.scheduleContainer.insertAdjacentHTML('beforeend', eventCardHTML);
+            });
+        }
+
+        // --- UI / AUTENTICAÇÃO ---
+        function updateAdminUI(isLoggedIn) {
+            isAdmin = isLoggedIn;
+            elements.adminLoginBtn.classList.toggle('hidden', isLoggedIn);
+            elements.adminMenuContainer.classList.toggle('hidden', !isLoggedIn);
+            renderSchedule(latestScheduleData); // Re-renderiza para mostrar/esconder botões de edição
+        }
+
+        function setActiveTab(day) {
+            activeDay = day;
+            const isSaturday = day === 'saturday';
+            elements.tabIndicator.style.transform = isSaturday ? 'translateX(0)' : 'translateX(100%)';
+            const blueColor = '#2563eb';
+            elements.btnSaturday.style.color = isSaturday ? blueColor : 'var(--text-light)';
+            elements.btnSunday.style.color = isSaturday ? 'var(--text-light)' : blueColor;
+            listenToSchedule(day);
+        }
+
+        function openModal(modal) { modal.classList.remove('hidden'); }
+        function closeModal(modal) { modal.classList.add('hidden'); }
+
+        function openAdminEditModal(eventId) {
+            const eventData = latestScheduleData.find(e => e.id === eventId);
+            if (!eventData) return;
+            
+            editingEventId = eventId;
+            elements.editModalTitle.textContent = eventData.activity;
+            elements.editStartTimeInput.value = eventData.start;
+            elements.editEndTimeInput.value = eventData.end;
+            elements.editStatusSelect.value = eventData.status;
+            elements.editNoteTextarea.value = eventData.note || '';
+
+            elements.adminEditModal.classList.add('is-open');
+            elements.adminEditModal.classList.remove('hidden');
+        }
+
+        function closeAdminEditModal() {
+            elements.adminEditModal.classList.remove('is-open');
+            setTimeout(() => {
+                elements.adminEditModal.classList.add('hidden');
+                editingEventId = null;
+            }, 350);
+        }
+
+        // --- SALVAR ALTERAÇÕES (CORREÇÃO: aplicar DELTA) ---
+        async function handleSaveChanges() {
+            if (!editingEventId) return;
+            const button = elements.saveEditBtn;
+            button.disabled = true;
+            button.textContent = 'Salvando...';
+
+            const collectionPath = `${activeDay}-schedule`;
+            const eventIndex = latestScheduleData.findIndex(event => event.id === editingEventId);
+            const originalEvent = latestScheduleData[eventIndex];
+
+            const newValues = {
+                start: elements.editStartTimeInput.value,
+                end: elements.editEndTimeInput.value,
+                status: elements.editStatusSelect.value,
+                note: elements.editNoteTextarea.value.trim()
+            };
+
+            const batch = writeBatch(db);
+
+            // manter comportamento existente: ao marcar concluído, avançar o próximo para "Acontecendo"
+            if (newValues.status === 'Concluído' && originalEvent.status !== 'Concluído') {
+                if (eventIndex >= 0 && eventIndex < latestScheduleData.length - 1) {
+                    const nextEvent = latestScheduleData[eventIndex + 1];
+                    const nextEventRef = doc(db, collectionPath, nextEvent.id);
+                    batch.update(nextEventRef, { status: 'Acontecendo' });
+                }
+            }
+
+            const currentEventRef = doc(db, collectionPath, editingEventId);
+            batch.update(currentEventRef, newValues);
+
+            // NOVA LÓGICA: aplicar delta (diferença em minutos) a todos os eventos subsequentes
+            if (newValues.end !== originalEvent.end) {
+                const originalEndMin = timeToMinutes(originalEvent.end);
+                const newEndMin = timeToMinutes(newValues.end);
+                const delta = newEndMin - originalEndMin; // positivo => adia, negativo => adianta
+
+                // Aplica delta preservando gaps/durações originais
+                for (let i = eventIndex + 1; i < latestScheduleData.length; i++) {
+                    const subsequentEvent = latestScheduleData[i];
+                    const updatedStartMin = timeToMinutes(subsequentEvent.start) + delta;
+                    const updatedEndMin = timeToMinutes(subsequentEvent.end) + delta;
+
+                    // Evitar horários negativos e garantir ordem correta de start/end
+                    const safeStart = Math.max(0, updatedStartMin);
+                    const safeEnd = Math.max(safeStart, updatedEndMin);
+
+                    const eventRef = doc(db, collectionPath, subsequentEvent.id);
+                    batch.update(eventRef, {
+                        start: minutesToTime(safeStart),
+                        end: minutesToTime(safeEnd)
+                    });
+                }
+            }
+
+            try {
+                await batch.commit();
+            } catch (error) {
+                console.error("Erro ao salvar alterações:", error);
+                alert("Erro ao salvar. Verifique se você tem permissão para editar (cheque as Regras de Segurança no Firebase).");
+            } finally {
+                button.disabled = false;
+                button.textContent = 'Salvar e Ajustar';
+                closeAdminEditModal();
+            }
+        }
+
+        // --- RESTAURAR ---
+        async function resetCurrentSchedule() {
+            const button = elements.confirmResetBtn;
+            button.disabled = true;
+            button.textContent = 'Restaurando...';
+            
+            const collectionPath = `${activeDay}-schedule`;
+            try {
+                const existingDocs = await getDocs(collection(db, collectionPath));
+                const deleteBatch = writeBatch(db);
+                existingDocs.forEach(d => deleteBatch.delete(d.ref));
+                await deleteBatch.commit();
+                // Após deletar, repopular o banco com os dados iniciais
+                await seedDatabase();
+            } catch (error) {
+                console.error("Erro ao restaurar:", error);
+                alert("Erro ao restaurar. Verifique se você tem permissão para editar (cheque as Regras de Segurança no Firebase).");
+            } finally {
+                button.disabled = false;
+                button.textContent = 'Confirmar';
+                closeModal(elements.resetModal);
+            }
+        }
+
+        // --- HANDLERS E LISTENERS ---
+        elements.adminLoginBtn.addEventListener('click', () => openModal(elements.adminModal));
+        elements.closeLoginModalBtn.addEventListener('click', () => closeModal(elements.adminModal));
+        elements.adminModal.addEventListener('click', (e) => {
+            if (e.target.id === 'admin-modal') closeModal(elements.adminModal);
+        });
+
+        elements.adminLoginForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const email = elements.emailInput.value;
+            const password = elements.passwordInput.value;
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+                closeModal(elements.adminModal);
+                elements.loginError.classList.add('hidden');
+                elements.adminLoginForm.reset();
+            } catch (error) {
+                console.error("Erro no login:", error.code);
+                elements.loginError.textContent = "Email ou senha incorretos.";
+                elements.loginError.classList.remove('hidden');
+            }
+        });
+
+        elements.adminLogoutBtn.addEventListener('click', async () => {
+            try {
+                await signOut(auth);
+                elements.adminDropdown.classList.add('hidden');
+            } catch (error) {
+                console.error("Erro ao fazer logout:", error);
+            }
+        });
+
+        elements.adminMenuBtn.addEventListener('click', () => elements.adminDropdown.classList.toggle('hidden'));
+        document.addEventListener('click', (e) => {
+            if (!elements.adminMenuContainer.contains(e.target)) {
+                elements.adminDropdown.classList.add('hidden');
+            }
+        });
+
+        elements.resetBtn.addEventListener('click', (e) => { e.preventDefault(); openModal(elements.resetModal); elements.adminDropdown.classList.add('hidden'); });
+        elements.cancelResetBtn.addEventListener('click', () => closeModal(elements.resetModal));
+        elements.confirmResetBtn.addEventListener('click', resetCurrentSchedule);
+        
+        elements.closeNoteBtn.addEventListener('click', () => closeModal(elements.noteModal));
+        elements.noteModal.addEventListener('click', (e) => {
+             if (e.target.id === 'note-modal') closeModal(elements.noteModal);
+        });
+
+        elements.saveEditBtn.addEventListener('click', handleSaveChanges);
+        elements.cancelEditBtn.addEventListener('click', closeAdminEditModal);
+        elements.adminEditModal.addEventListener('click', (e) => {
+            if(e.target.id === 'admin-edit-modal') closeAdminEditModal();
+        });
+
+        elements.btnSaturday.addEventListener('click', () => setActiveTab('saturday'));
+        elements.btnSunday.addEventListener('click', () => setActiveTab('sunday'));
+        elements.scheduleContainer.addEventListener('click', (e) => {
+            const editBtn = e.target.closest('.edit-event-btn');
+            const noteBtn = e.target.closest('.view-note-btn');
+            if (editBtn) {
+                openAdminEditModal(editBtn.dataset.id);
+            }
+            if (noteBtn) {
+                elements.noteContent.textContent = noteBtn.dataset.note;
+                openModal(elements.noteModal);
+            }
+        });
+
+        // --- INICIALIZAÇÃO ---
+        async function init() {
+            onAuthStateChanged(auth, async (user) => {
+                if (user && !user.isAnonymous) {
+                    // Usuário admin está logado
+                    updateAdminUI(true);
+                } else {
+                    // Usuário é anônimo ou está deslogado
+                    updateAdminUI(false);
+                    if (!user) {
+                        // Se não há nenhum usuário, loga anonimamente
+                        try {
+                            await signInAnonymously(auth);
+                        } catch (error) {
+                            console.error("Erro no login anônimo:", error);
+                        }
+                    }
+                }
+            });
+
+            try {
+                await seedDatabase(); 
+                setActiveTab('saturday');
+            } catch (error) {
+                console.log("Execução interrompida por erro no banco.");
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>
