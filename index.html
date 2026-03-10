@@ -129,7 +129,7 @@
         
         <header class="sticky top-0 bg-gray-100 z-30 px-4 pt-4 pb-3 border-b border-gray-200">
             <div class="flex justify-between items-center mb-4">
-                <h1 class="text-xl font-bold text-gray-800">1º EAC</h1>
+                <h1 class="text-xl font-bold text-gray-800">2º EAC</h1>
                 <div class="text-right">
                     <p id="estimated-end-time" class="text-lg font-bold text-gray-900"></p>
                     <p id="delay-status" class="delay-status-strong"></p>
@@ -276,67 +276,72 @@
         }
         
         const plannedEndTimes = {
-            saturday: '20:10',
-            sunday: '18:50'
+            saturday: '20:00',
+            sunday: '18:45'
         };
         
         const initialSaturdaySchedule = [
-            { order: 0, start: "09:00", end: "11:00", activity: "CHEGADA DAS EQUIPES DE TRABALHO", location: "SAGRADA FAMILIA", status: "Aguardando", note: "" }, 
-            { order: 1, start: "11:00", end: "11:15", activity: "BENÇÃO DO SANTÍSSIMO - EQUIPES DE TRABALHO", location: "CAPELA", status: "Aguardando", note: "" }, 
-            { order: 2, start: "11:15", end: "12:30", activity: "ALMOÇO - TODAS AS EQUIPES", location: "GALPÃO", status: "Aguardando", note: "" }, 
-            { order: 3, start: "13:30", end: "14:00", activity: "CHEGADA DOS ENCONTRISTAS", location: "GALPÃO", status: "Aguardando", note: "" }, 
-            { order: 4, start: "14:00", end: "14:25", activity: "TEATRO: AUTO DA BARCA", location: "PLENÁRIO", status: "Aguardando", note: "" }, 
-            { order: 5, start: "14:25", end: "14:30", activity: "MOVIMENTAÇÃO PARA A SALA", location: "PLENÁRIO", status: "Aguardando", note: "" }, 
-            { order: 6, start: "14:30", end: "14:40", activity: "APRESENTAÇÃO SALA, AVISO E ORIENTAÇÕES", location: "PLENÁRIO", status: "Aguardando", note: "" }, 
-            { order: 7, start: "14:40", end: "15:10", activity: "PALESTRA: EU VIVO, EU PENSO, PARA QUÊ? - PALESTRANTE - PADRE MATHEUS ", location: "PLENÁRIO", status: "Aguardando", note: "" }, 
-            { order: 8, start: "15:10", end: "15:15", activity: "ORIENTAÇÕES SOBRE AS RESENHAS", location: "PLENÁRIO", status: "Aguardando", note: "" },
-            { order: 9, start: "15:15", end: "15:20", activity: "MOVIMENTAÇÃO PARA A RESENHA", location: "", status: "Aguardando", note: "" }, 
-            { order: 10, start: "15:20", end: "15:35", activity: "RESENHA: APRESENTAÇÕES", location: "SALAS TÉRREO", status: "Aguardando", note: "" }, 
-            { order: 11, start: "15:35", end: "15:40", activity: "MOVIMENTAÇÃO PARA O GALPÃO", location: "", status: "Aguardando", note: "" }, 
-            { order: 12, start: "15:40", end: "16:05", activity: "CAFÉ, CANTINA, BANHEIRO E ANIMAÇÃO", location: "GALPÃO", status: "Aguardando", note: "" }, 
-            { order: 13, start: "16:05", end: "16:30", activity: "TEATRO: UM DIA COM JESUS", location: "PLENÁRIO", status: "Aguardando", note: "" }, 
-            { order: 14, start: "16:30", end: "17:00", activity: "PALESTRA O AMOR DE DEUS", location: "PLENÁRIO", status: "Aguardando", note: "" }, 
-            { order: 15, start: "17:00", end: "17:05", activity: "MOVIMENTAÇÃO PARA AS RESENHAS", location: "", status: "Aguardando", note: "" }, 
-            { order: 16, start: "17:05", end: "17:35", activity: "RESENHA: EU VIVO, EU PENSO, PARA QUÊ?/AMOR DE DEUS", location: "SALAS TERREO", status: "Aguardando", note: "" }, 
-            { order: 17, start: "17:35", end: "17:40", activity: "MOVIMENTAÇÃO DOS ENCONTRISTAS PARA O PLENÁRIO", location: "PLENÁRIO", status: "Aguardando", note: "" }, 
-            { order: 18, start: "17:40", end: "19:10", activity: "VEREDA", location: "SALAS TERREO", status: "Aguardando", note: "" }, 
-            { order: 19, start: "19:10", end: "19:25", activity: "ADORAÇÃO AO SANTISSIMO - ENCONTRISTAS", location: "PLENÁRIO", status: "Aguardando", note: "" }, 
-            { order: 20, start: "19:25", end: "19:30", activity: "MOVIMENTAÇÃO PARA O GALPÃO", location: "", status: "Aguardando", note: "" }, 
-            { order: 21, start: "19:30", end: "20:00", activity: "JANTAR - LANCHE", location: "SALAS (TÉRREO)", status: "Aguardando", note: "" }, 
-            { order: 22, start: "20:00", end: "20:10", activity: "ENCERRAMENTO", location: "", status: "Aguardando", note: "" }
+            { order: 0, start: "07:30", end: "12:30", activity: "CHEGADA DAS EQUIPES DE TRABALHO", location: "MISERICÓRDIA", status: "Aguardando", note: "" }, 
+            { order: 1, start: "12:30", end: "13:00", activity: "BENÇÃO DO SANTÍSSIMO - EQUIPES DE TRABALHO", location: "CAPELA", status: "Aguardando", note: "" }, 
+            { order: 2, start: "13:00", end: "13:30", activity: "PREPARAÇÃO PARA A CHEGADA DOS ENCONTRISTAS", location: "", status: "Aguardando", note: "" }, 
+            { order: 3, start: "13:30", end: "14:00", activity: "CHEGADA DOS ENCONTRISTAS", location: "PÁTIO EXTERNO", status: "Aguardando", note: "" },
+            { order: 4, start: "14:00", end: "14:10", activity: "MOVIMENTAÇÃO DOS ENCONTRISTAS PARA O SALÃO NOBRE", location: "", status: "Aguardando", note: "" },  
+            { order: 5, start: "14:10", end: "14:40", activity: "TEATRO: AUTO DA BARCA", location: "SALÃO NOBRE", status: "Aguardando", note: "" }, 
+            { order: 6, start: "14:40", end: "14:50", activity: "APRESENTAÇÃO SALA, AVISO E ORIENTAÇÕES", location: "SALÃO NOBRE", status: "Aguardando", note: "" }, 
+            { order: 7, start: "14:50", end: "15:20", activity: "PALESTRA: EU VIVO, EU PENSO, PARA QUÊ? - PALESTRANTE: DIÁCONO MATHEUS ", location: "SALÃO NOBRE", status: "Aguardando", note: "" }, 
+            { order: 8, start: "15:20", end: "15:25", activity: "ORIENTAÇÕES SOBRE AS RESENHAS", location: "SALÃO NOBRE", status: "Aguardando", note: "" },
+            { order: 9, start: "15:25", end: "15:30", activity: "MOVIMENTAÇÃO PARA A RESENHA", location: "", status: "Aguardando", note: "" }, 
+            { order: 10, start: "15:30", end: "15:45", activity: "RESENHA: APRESENTAÇÕES", location: "SALAS TÉRREO", status: "Aguardando", note: "" }, 
+            { order: 11, start: "15:45", end: "15:50", activity: "MOVIMENTAÇÃO PARA O PÁTIO", location: "", status: "Aguardando", note: "" }, 
+            { order: 12, start: "15:50", end: "16:05", activity: "CAFÉ, CANTINA, BANHEIRO", location: "PÁTIO", status: "Aguardando", note: "" }, 
+            { order: 13, start: "16:05", end: "16:10", activity: "MOVIMENTAÇÃO DOS ENCONTRISTAS PARA O SALÃO NOBRE", location: "", status: "Aguardando", note: "" }, 
+            { order: 14, start: "16:10", end: "16:25", activity: "ATIVIDADE DA SALA - MÚSICA", location: "SALÃO NOBRE", status: "Aguardando", note: "" }, 
+            { order: 15, start: "16:25", end: "16:40", activity: "TEATRO: UM DIA COM JESUS", location: "SALÃO NOBRE", status: "Aguardando", note: "" }, 
+            { order: 16, start: "16:40", end: "17:10", activity: "PALESTRA O AMOR DE DEUS - PALESTRANTE: THIAGO WESLEY ", location: "SALÃO NOBRE", status: "Aguardando", note: "" }, 
+            { order: 17, start: "17:10", end: "17:15", activity: "MOVIMENTAÇÃO PARA AS RESENHAS", location: "", status: "Aguardando", note: "" }, 
+            { order: 18, start: "17:15", end: "17:45", activity: "RESENHA: EU VIVO, EU PENSO, PARA QUÊ?/AMOR DE DEUS", location: "SALAS TERREO", status: "Aguardando", note: "" }, 
+            { order: 19, start: "17:45", end: "17:50", activity: "MOVIMENTAÇÃO DOS ENCONTRISTAS PARA O SALÃO NOBRE", location: "SALÃO NOBRE", status: "Aguardando", note: "" }, 
+            { order: 20, start: "17:50", end: "18:50", activity: "VEREDA", location: "SALAS TERREO", status: "Aguardando", note: "" }, 
+            { order: 21, start: "18:50", end: "19:05", activity: "ADORAÇÃO AO SANTISSIMO - ENCONTRISTAS", location: "CAPELA", status: "Aguardando", note: "" }, 
+            { order: 22, start: "19:05", end: "19:10", activity: "MOVIMENTAÇÃO PARA O PÁTIO", location: "", status: "Aguardando", note: "" }, 
+            { order: 23, start: "19:10", end: "19:40", activity: "JANTAR - LANCHE", location: "PÁTIO", status: "Aguardando", note: "" }, 
+            { order: 24, start: "19:40", end: "20:00", activity: "ENCERRAMENTO", location: "", status: "Aguardando", note: "" }
         ];
         const initialSundaySchedule = [
-            { order: 0, start: "08:00", end: "08:30", activity: "CHEGADA DAS EQUIPES DE TRABALHO", location: "", status: "Aguardando", note: "" }, 
-            { order: 1, start: "08:30", end: "09:00", activity: "CHEGADA DOS ENCONTRISTAS - RECEPÇÃO E CAFÉ", location: "GALPÃO", status: "Aguardando", note: "" }, 
+            { order: 0, start: "07:00", end: "07:45", activity: "CHEGADA DAS EQUIPES DE TRABALHO", location: "", status: "Aguardando", note: "" },
+            { order: 1, start: "07:45", end: "08:30", activity: "BENÇÃO DO SANTÍSSIMO - EQUIPES DE TRABALHO", location: "CAPELA", status: "Aguardando", note: "" },  
+            { order: 1, start: "08:30", end: "09:00", activity: "CHEGADA DOS ENCONTRISTAS - RECEPÇÃO E CAFÉ", location: "PÁTIO", status: "Aguardando", note: "" }, 
             { order: 2, start: "09:00", end: "09:05", activity: "MOVIMENTAÇÃO PARA A CAPELA", location: "", status: "Aguardando", note: "" }, 
             { order: 3, start: "09:05", end: "09:25", activity: "CAPELA - ATIVIDADE DA EQUIPE DE LITURGIA", location: "CAPELA", status: "Aguardando", note: "" }, 
-            { order: 4, start: "09:25", end: "09:30", activity: "MOVIMENTAÇÃO DOS ENCONTRISTAS PARA O PLENÁRIO", location: "", status: "Aguardando", note: "" }, 
-            { order: 5, start: "09:30", end: "09:45", activity: "ATIVIDADE DA SALA - MUSICA", location: "PLENÁRIO", status: "Aguardando", note: "" }, 
-            { order: 6, start: "09:45", end: "10:05", activity: "PALESTRA: BULLYING", location: "PLENÁRIO", status: "Aguardando", note: "" }, 
-            { order: 7, start: "10:05", end: "10:35", activity: "PALESTRA: AMIZADE CRISTÃ - PALESTRANTE: BRUNA QUILANTE", location: "PLENÁRIO", status: "Aguardando", note: "" }, 
-            { order: 8, start: "10:35", end: "10:40", activity: "RESENHA: AMIZADE CRISTÃ (DINÂMICA)", location: "SALAS (TÉRREO)", status: "Aguardando", note: "" }, 
-            { order: 9, start: "11:05", end: "11:10", activity: "MOVIMENTAÇÃO DOS ENCONTRISTAS PARA O PLENÁRIO", location: "", status: "Aguardando", note: "" }, 
-            { order: 10, start: "11:10", end: "11:25", activity: "ATIVIDADE DE SALA - MUSICA", location: "PLENÁRIO", status: "Aguardando", note: "" }, 
-            { order: 11, start: "11:25", end: "11:55", activity: "PALESTRA NOSSA SENHORA - PALESTRANTE: VICTOR MASCARENHAS", location: "PLENÁRIO", status: "Aguardando", note: "" }, 
+            { order: 4, start: "09:25", end: "09:30", activity: "MOVIMENTAÇÃO DOS ENCONTRISTAS PARA O SALÃO NOBRE", location: "", status: "Aguardando", note: "" }, 
+            { order: 5, start: "09:30", end: "09:45", activity: "ATIVIDADE DA SALA - MUSICA", location: "SALÃO NOBRE", status: "Aguardando", note: "" }, 
+            { order: 6, start: "09:45", end: "10:05", activity: "TEATRO: BULLYING", location: "SALÃO NOBRE", status: "Aguardando", note: "" }, 
+            { order: 7, start: "10:05", end: "10:35", activity: "PALESTRA: AMIZADE CRISTÃ - PALESTRANTE: Trio GGG", location: "SALÃO NOBRE", status: "Aguardando", note: "" }, 
+            { order: 9, start: "10:35", end: "10:40", activity: "MOVIMENTAÇÃO PARA A RESENHA", location: "", status: "Aguardando", note: "" }, 
+            { order: 8, start: "10:40", end: "11:05", activity: "RESENHA: AMIZADE CRISTÃ (DINÂMICA)", location: "SALAS (TÉRREO)", status: "Aguardando", note: "" }, 
+            { order: 9, start: "11:05", end: "11:10", activity: "MOVIMENTAÇÃO DOS ENCONTRISTAS PARA O SALÃO NOBRE", location: "", status: "Aguardando", note: "" }, 
+            { order: 10, start: "11:10", end: "11:25", activity: "ATIVIDADE DE SALA - MUSICA", location: "SALÃO NOBRE", status: "Aguardando", note: "" }, 
+            { order: 11, start: "11:25", end: "11:55", activity: "PALESTRA NOSSA SENHORA - PALESTRANTE: VICTOR MASCARENHAS", location: "SALÃO NOBRE", status: "Aguardando", note: "" }, 
             { order: 12, start: "11:55", end: "12:00", activity: "MOVIMENTAÇÃO DOS ENCONTRISTAS PARA O REFEITÓRIO", location: "", status: "Aguardando", note: "" }, 
-            { order: 13, start: "12:00", end: "12:45", activity: "ALMOÇO", location: "GALPÃO", status: "Aguardando", note: "" }, 
+            { order: 13, start: "12:00", end: "12:45", activity: "ALMOÇO", location: "PÁTIO INTERNO", status: "Aguardando", note: "" }, 
             { order: 14, start: "12:45", end: "13:00", activity: "CANTINA E BANHEIRO", location: "PÁTIO INTERNO", status: "Aguardando", note: "" }, 
-            { order: 15, start: "13:00", end: "13:05", activity: "MOVIMENTAÇÃO DOS ENCONTRISTAS PARA O PLENÁRIO", location: "", status: "Aguardando", note: "" }, 
-            { order: 16, start: "13:05", end: "13:20", activity: "ATIVIDADE DA SALA - MUSICA", location: "PLENÁRIO", status: "Aguardando", note: "" }, 
-            { order: 17, start: "13:20", end: "13:40", activity: "TEATRO - MISSA EXPLICADA", location: "PLENÁRIO", status: "Aguardando", note: "" }, 
-            { order: 18, start: "13:40", end: "14:20", activity: "PALESTRA - MISSA EXPLICADA", location: "PLENÁRIO", status: "Aguardando", note: "" }, 
+            { order: 15, start: "13:00", end: "13:05", activity: "MOVIMENTAÇÃO DOS ENCONTRISTAS PARA O SALÃO NOBRE", location: "", status: "Aguardando", note: "" }, 
+            { order: 16, start: "13:05", end: "13:20", activity: "ATIVIDADE DA SALA - MUSICA", location: "SALÃO NOBRE", status: "Aguardando", note: "" }, 
+            { order: 17, start: "13:20", end: "13:40", activity: "TEATRO - MISSA EXPLICADA", location: "SALÃO NOBRE", status: "Aguardando", note: "" }, 
+            { order: 18, start: "13:40", end: "14:20", activity: "PALESTRA - MISSA EXPLICADA - PALESTRANTE: PADRE RAFAEL", location: "SALÃO NOBRE", status: "Aguardando", note: "" }, 
             { order: 19, start: "14:20", end: "14:25", activity: "MOVIMENTAÇÃO PARA AS RESENHAS", location: "", status: "Aguardando", note: "" }, 
             { order: 20, start: "14:25", end: "14:50", activity: "RESENHA - MISSA EXPLICADA", location: "", status: "Aguardando", note: "" }, 
             { order: 21, start: "14:50", end: "14:55", activity: "MOVIMENTAÇÃO PARA O PÁTIO", location: "", status: "Aguardando", note: "" }, 
             { order: 22, start: "14:55", end: "15:10", activity: "CAFÉ, CANTINA E BANHEIRO", location: "PÁTIO", status: "Aguardando", note: "" }, 
-            { order: 23, start: "15:10", end: "15:25", activity: "ATIVIDADE SALA - MUSICA", location: "PLENÁRIO", status: "Aguardando", note: "" }, 
-            { order: 24, start: "15:25", end: "15:55", activity: "PALESTRA: 4º MANDAMENTO - HONRAR PAI E MÃE - PALESTRANTE DIÁCONO RAFAEL", location: "PLENÁRIO", status: "Aguardando", note: "" }, 
-            { order: 25, start: "15:55", end: "16:00", activity: "TEATRO - OS ANJOS DO CAÇA AO TESOURO", location: "PLENÁRIO", status: "Aguardando", note: "" }, 
-            { order: 26, start: "16:00", end: "17:00", activity: "DINÂMICA - ENTREGA DOS KITS", location: "SALAS TERREO", status: "Aguardando", note: "" }, 
-            { order: 27, start: "17:00", end: "17:15", activity: "MOVIMENTAÇÃO DOS ENCONTRISTAS PARA O PÁTIO E ENCONTRO COM OS FAMILIARES", location: "", status: "Aguardando", note: "" }, 
-            { order: 28, start: "17:15", end: "17:25", activity: "MOVIMENTAÇÃO DOS ENCONTRISTAS E PAIS PARA O PÁTIO", location: "PÁTIO", status: "Aguardando", note: "" }, 
-            { order: 29, start: "17:25", end: "18:40", activity: "SANTA MISSA", location: "PÁTIO", status: "Aguardando", note: "" }, 
-            { order: 30, start: "18:40", end: "18:50", activity: "ENCERRAMENTO", location: "", status: "Aguardando", note: "" }
+            { order: 4, start: "15:10", end: "15:15", activity: "MOVIMENTAÇÃO DOS ENCONTRISTAS PARA O SALÃO NOBRE", location: "", status: "Aguardando", note: "" }, 
+            { order: 23, start: "15:15", end: "15:30", activity: "ATIVIDADE SALA - MUSICA", location: "SALÃO NOBRE", status: "Aguardando", note: "" }, 
+            { order: 24, start: "15:30", end: "16:00", activity: "PALESTRA: 4º MANDAMENTO - HONRAR PAI E MÃE - PALESTRANTE DIÁCONO RAFAEL", location: "SALÃO NOBRE", status: "Aguardando", note: "" }, 
+            { order: 25, start: "16:00", end: "16:05", activity: "MOVIMENTAÇÃO PARA AS RESENHAS", location: "", status: "Aguardando", note: "" }, 
+            { order: 26, start: "16:05", end: "16:35", activity: "RESENHA: ENCERRAMENTO (Avisos gerais e entrega kits)", location: "SALAS TERREO", status: "Aguardando", note: "" }, 
+            { order: 27, start: "16:35", end: "16:50", activity: "MOVIMENTAÇÃO DOS ENCONTRISTAS PARA O PÁTIO E ENCONTRO COM OS FAMILIARES", location: "", status: "Aguardando", note: "" }, 
+            { order: 28, start: "16:50", end: "17:00", activity: "MOVIMENTAÇÃO DOS ENCONTRISTAS E PAIS PARA O SALÃO NOBRE", location: "", status: "Aguardando", note: "" }, 
+            { order: 29, start: "17:00", end: "18:15", activity: "SANTA MISSA", location: "PÁTIO", status: "Aguardando", note: "" }, 
+            { order: 30, start: "18:15", end: "18:45", activity: "ENCERRAMENTO", location: "", status: "Aguardando", note: "" }
         ];
 
         // --- ESTADO DO APLICATIVO ---
